@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     sitemap({
-      hostname: 'https://yourdomain.com',
+      hostname: 'freelancehourlyratecalculator.com',
       dynamicRoutes: ['/privacy-policy'],
       changefreq: {
         '/': 'weekly',

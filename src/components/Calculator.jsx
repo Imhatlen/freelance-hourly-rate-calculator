@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
 const FIELD_CONFIG = [
   {
@@ -57,15 +57,31 @@ function formatCurrency(value) {
 
 function InputField({ config, value, onChange }) {
   const { id, label, hint, prefix, suffix, min, max, step } = config;
+  const [inputText, setInputText] = useState(String(value));
+  const isFocused = useRef(false);
 
-  function handleNumberInput(e) {
-    const raw = e.target.value.replace(/[^0-9.]/g, '');
-    const parsed = parseFloat(raw);
-    if (raw === '' || raw === '.') {
-      onChange(id, 0);
-    } else if (!isNaN(parsed)) {
-      onChange(id, Math.min(max, Math.max(min, parsed)));
+  // When the slider moves, sync the text field (only if user isn't typing)
+  useEffect(() => {
+    if (!isFocused.current) {
+      setInputText(String(value));
     }
+  }, [value]);
+
+  function handleTextChange(e) {
+    const raw = e.target.value;
+    setInputText(raw);
+    const parsed = parseFloat(raw);
+    if (!isNaN(parsed) && parsed >= 0) {
+      onChange(id, parsed);
+    }
+  }
+
+  function handleBlur() {
+    isFocused.current = false;
+    const parsed = parseFloat(inputText);
+    const clamped = isNaN(parsed) ? min : Math.min(max, Math.max(min, parsed));
+    setInputText(String(clamped));
+    onChange(id, clamped);
   }
 
   function handleSlider(e) {
@@ -90,8 +106,10 @@ function InputField({ config, value, onChange }) {
           min={min}
           max={max}
           step={step}
-          value={value}
-          onChange={handleNumberInput}
+          value={inputText}
+          onChange={handleTextChange}
+          onFocus={() => { isFocused.current = true; }}
+          onBlur={handleBlur}
           className="w-full text-right text-xl font-bold text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {suffix && (

@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 
 const EFFECTIVE_DATE = 'April 30, 2026';
-const CONTACT_EMAIL = 'contact@yourdomain.com';
+const CONTACT_EMAIL = 'jachatlen@gmail.com';
 const SITE_NAME = 'Freelance Hourly Rate Calculator';
-const SITE_URL = 'https://yourdomain.com';
+const SITE_URL = 'https://freelancehourlyratecalculator.com';
 
 function Section({ title, children }) {
   return (

@@ -6,7 +6,7 @@ const FIELD_CONFIG = [
     label: 'Desired Annual Take-Home Salary',
     hint: 'How much do you want to earn after expenses?',
     prefix: '$',
-    min: 10000,
+    min: 0,
     max: 500000,
     step: 1000,
     defaultValue: 80000,
@@ -25,7 +25,6 @@ const FIELD_CONFIG = [
     id: 'daysOff',
     label: 'Days Off Per Year',
     hint: 'Weekends, holidays, vacation, sick days.',
-    prefix: null,
     suffix: 'days',
     min: 0,
     max: 200,
@@ -36,7 +35,6 @@ const FIELD_CONFIG = [
     id: 'billableHours',
     label: 'Billable Hours Per Day',
     hint: 'Admin, sales, and breaks eat into this — be realistic.',
-    prefix: null,
     suffix: 'hrs',
     min: 1,
     max: 12,
@@ -57,30 +55,33 @@ function formatCurrency(value) {
 
 function InputField({ config, value, onChange }) {
   const { id, label, hint, prefix, suffix, min, max, step } = config;
-  const [inputText, setInputText] = useState(String(value));
-  const isFocused = useRef(false);
+  // Local text state so the user can type freely without being interrupted
+  const [text, setText] = useState(String(value));
+  const focused = useRef(false);
 
-  // When the slider moves, sync the text field (only if user isn't typing)
+  // Slider changed: sync the text box only while not typing
   useEffect(() => {
-    if (!isFocused.current) {
-      setInputText(String(value));
+    if (!focused.current) {
+      setText(String(value));
     }
   }, [value]);
 
-  function handleTextChange(e) {
+  function handleChange(e) {
     const raw = e.target.value;
-    setInputText(raw);
+    // Allow only digits and a single decimal point
+    if (!/^[0-9]*\.?[0-9]*$/.test(raw) && raw !== '') return;
+    setText(raw);
     const parsed = parseFloat(raw);
-    if (!isNaN(parsed) && parsed >= 0) {
+    if (!isNaN(parsed)) {
       onChange(id, parsed);
     }
   }
 
   function handleBlur() {
-    isFocused.current = false;
-    const parsed = parseFloat(inputText);
+    focused.current = false;
+    const parsed = parseFloat(text);
     const clamped = isNaN(parsed) ? min : Math.min(max, Math.max(min, parsed));
-    setInputText(String(clamped));
+    setText(String(clamped));
     onChange(id, clamped);
   }
 
@@ -101,14 +102,11 @@ function InputField({ config, value, onChange }) {
         )}
         <input
           id={id}
-          type="number"
+          type="text"
           inputMode="decimal"
-          min={min}
-          max={max}
-          step={step}
-          value={inputText}
-          onChange={handleTextChange}
-          onFocus={() => { isFocused.current = true; }}
+          value={text}
+          onChange={handleChange}
+          onFocus={() => { focused.current = true; }}
           onBlur={handleBlur}
           className="w-full text-right text-xl font-bold text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
@@ -130,16 +128,8 @@ function InputField({ config, value, onChange }) {
         aria-label={`${label} slider`}
       />
       <div className="flex justify-between text-xs text-gray-400 mt-1">
-        <span>
-          {prefix}
-          {min}
-          {suffix ? ` ${suffix}` : ''}
-        </span>
-        <span>
-          {prefix}
-          {max.toLocaleString()}
-          {suffix ? ` ${suffix}` : ''}
-        </span>
+        <span>{prefix}{min}{suffix ? ` ${suffix}` : ''}</span>
+        <span>{prefix}{max.toLocaleString()}{suffix ? ` ${suffix}` : ''}</span>
       </div>
     </div>
   );
@@ -175,7 +165,6 @@ export default function Calculator() {
 
   const results = useMemo(() => {
     const { annualSalary, annualExpenses, daysOff, billableHours } = values;
-
     const workingDays = 365 - Math.max(0, daysOff);
     const totalHoursPerYear = workingDays * Math.max(0.5, billableHours);
 

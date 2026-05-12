@@ -9,13 +9,15 @@ export default defineConfig({
     tailwindcss(),
     sitemap({
       hostname: 'https://freelancehourlyratecalculator.com',
-      dynamicRoutes: ['/privacy-policy'],
+      dynamicRoutes: ['/about', '/privacy-policy'],
       changefreq: {
         '/': 'weekly',
+        '/about': 'monthly',
         '/privacy-policy': 'yearly',
       },
       priority: {
         '/': 1.0,
+        '/about': 0.7,
         '/privacy-policy': 0.3,
       },
       lastmod: new Date().toISOString().split('T')[0],

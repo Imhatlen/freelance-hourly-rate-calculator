@@ -5,6 +5,7 @@ import Calculator from './components/Calculator';
 import SeoContent from './components/SeoContent';
 import Footer from './components/Footer';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import About from './components/About';
 import './index.css';
 
 function HomePage() {
@@ -31,6 +32,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<About />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </BrowserRouter>
